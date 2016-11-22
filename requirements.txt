@@ -1,0 +1,4 @@
+Quandl==3.0.1
+beautifulsoup4==4.5.1
+click==6.6
+requests==2.12.1

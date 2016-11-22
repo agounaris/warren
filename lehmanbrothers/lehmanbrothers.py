@@ -1,12 +1,26 @@
 # -*- coding: utf-8 -*-
 
-import requests
-import re
-from bs4 import BeautifulSoup
+import json
+import os
 
 
 class NotValidSymbolException(Exception):
     pass
+
+
+class Difference(object):
+    def __init__(self, values=None):
+        if isinstance(values, dict):
+            for key, value in values.items():
+                setattr(self, key, value)
+        else:
+            raise ValueError('Parameter not a dict')
+
+    def __repr__(self):
+        text = []
+        for attr, value in self.__dict__.iteritems():
+            text.append('Attribute {attr:30} changed by {value:.2%}'.format(attr=attr, value=value))
+        return '\n'.join(text)
 
 
 class Statement(object):
@@ -18,32 +32,20 @@ class Statement(object):
             raise ValueError('Parameter not a dict')
 
     def __eq__(self, statement):
-        for attr, value in self.__dict__.iteritems():
-            value_one = float(re.sub("[^0-9]", "", value))
-            value_two = float(re.sub("[^0-9]", "", statement.__dict__[attr]))
+        differences = {}
+        for attr, value_one in self.__dict__.iteritems():
+            value_two = statement.__dict__[attr]
+            if not isinstance(value_one, float) or not isinstance(value_two,
+                                                                  float):
+                continue
+
             if value_two:
                 percentage = (value_one - value_two) / value_two
-                # print(percentage)
-                print(
-                    '{attr} change is {p:.2%}'.format(attr=attr, p=percentage))
-                # break
+                differences[attr] = percentage
             else:
-                print('{attr} change is zero'.format(attr=attr))
+                differences[attr] = 0
 
-                # def __str__(self):
-                #     """
-                #     placeholder
-                #
-                #     :return:
-                #     """
-                #     space = 40
-                #     text = list()
-                #     format_text = Occurrence.format_text
-                #     text.append(format_text('Name', self.name, space))
-                #     text.append(format_text('Version', self.release.number, space))
-                #     text.append(format_text('Start Date', self.start_datetime, space))
-                #     text.append(format_text('End Date', self.end_datetime, space))
-                #     return '\n'.join(text)
+        return Difference(differences)
 
 
 class IncomeStatement(Statement):
@@ -69,9 +71,10 @@ class FinancialPerformance(object):
         self._income_statements = []
         self._balance_sheets = []
         self._cash_flows = []
+
         income_statement = self.fetch_statement(symbol)
-        balance_sheets = self.fetch_statement(symbol, query='balance-sheet')
-        cash_flows = self.fetch_statement(symbol, query='cash-flow')
+        balance_sheets = self.fetch_statement(symbol, query='balance_sheets')
+        cash_flows = self.fetch_statement(symbol, query='cash_flows')
         for st in income_statement:
             self._income_statements.append(IncomeStatement(st))
         for st in balance_sheets:
@@ -101,7 +104,7 @@ class FinancialPerformance(object):
             raise ValueError('Not a valid year')
 
         return [income for income in self._income_statements
-                if income.period_ending == year][0]
+                if income.date_released == year][0]
 
     def get_balance_sheet_by_year(self, year=None):
         """
@@ -113,7 +116,7 @@ class FinancialPerformance(object):
             raise ValueError('Not a valid year')
 
         return [bs for bs in self._balance_sheets
-                if bs.period_ending == year][0]
+                if bs.year == year][0]
 
     def get_cash_flow_by_year(self, year=None):
         """
@@ -125,7 +128,7 @@ class FinancialPerformance(object):
             raise ValueError('Not a valid year')
 
         return [cf for cf in self._cash_flows
-                if cf.period_ending == year][0]
+                if cf.year == year][0]
 
     def return_on_asset(self, end_year=None):
         """
@@ -137,16 +140,13 @@ class FinancialPerformance(object):
             return None
 
         income_statement = [income for income in self._income_statements
-                            if income.period_ending == end_year][0]
+                            if income.date_released == end_year][0]
         balance_sheets = [bs for bs in self._balance_sheets
-                          if int(bs.period_ending) in [int(end_year),
+                          if int(bs.date_released) in [int(end_year),
                                                        int(end_year) - 1]]
-        ebit = float(re.sub("[^0-9]", "",
-                            income_statement.earnings_before_interest_and_tax))
-        this_years_assets = float(
-            re.sub("[^0-9]", "", balance_sheets[0].total_assets))
-        previous_years_assets = float(
-            re.sub("[^0-9]", "", balance_sheets[1].total_assets))
+        ebit = float(income_statement.ebit)
+        this_years_assets = float(balance_sheets[0].total_assets)
+        previous_years_assets = float(balance_sheets[1].total_assets)
         average_total_assets = (this_years_assets + previous_years_assets) / 2
         return ebit / average_total_assets
 
@@ -159,15 +159,13 @@ class FinancialPerformance(object):
         if not end_year:
             return None
         income_statement = [income for income in self._income_statements
-                            if income.period_ending == end_year][0]
+                            if income.year == end_year][0]
         balance_sheets = [bs for bs in self._balance_sheets
-                          if int(bs.period_ending) in [int(end_year),
+                          if int(bs.year) in [int(end_year),
                                                        int(end_year) - 1]]
-        net_income = float(re.sub("[^0-9]", "", income_statement.net_income))
-        this_years_equity = float(
-            re.sub("[^0-9]", "", balance_sheets[0].total_equity))
-        previous_years_equity = float(
-            re.sub("[^0-9]", "", balance_sheets[1].total_equity))
+        net_income = income_statement.net_income
+        this_years_equity = balance_sheets[0].total_stockholder_equity
+        previous_years_equity = balance_sheets[1].total_stockholder_equity
         equity = (this_years_equity + previous_years_equity) / 2
         return net_income / equity
 
@@ -181,49 +179,23 @@ class FinancialPerformance(object):
         if not end_year:
             return None
         income_statement = [income for income in self._income_statements
-                            if income.period_ending == end_year][0]
-        profit = float(re.sub("[^0-9]", "", income_statement.gross_profit))
+                            if income.year == end_year][0]
+        profit = income_statement.gross_profit
         if use_ebit:
-            profit = float(re.sub("[^0-9]", "",
-                                  income_statement.earnings_before_interest_and_tax))
+            profit = income_statement.ebit
 
-        total_revenue = float(
-            re.sub("[^0-9]", "", income_statement.total_revenue))
-        return profit / total_revenue
+        return profit / income_statement.total_revenue
 
-    @staticmethod
-    def fetch_statement(symbol, query='income-statement'):
-        r = requests.get(
-            'http://www.nasdaq.com/symbol/{symbol}/financials?query={query}'.format(
-                symbol=symbol, query=query))
-        soup = BeautifulSoup(r.content, 'html.parser')
-        div = soup.find('div', attrs={'class': 'genTable'})
-        table = div.find('table')
-        rows = table.find_all('tr')
-        statements = []
-        result = []
-        for row in rows:
-            header = row.find('th')
-            if header:
-                header = header.text.lower().replace(' ', '_').replace(':',
-                                                                       '').replace(
-                    "'", "").replace('/',
-                                     '-').replace(
-                    '.', '').replace(',', '')
-                cols = row.find_all('td')
-                if header == 'period_ending':
-                    cols = row.find_all('th')
-                cols = [ele.text.strip().split('/')[-1] for ele in cols if ele]
-                # cols.insert(0, header)
-                attribute = [header] + cols[-4:]
-                statements.append(attribute)
+    def fetch_statement(self, symbol, query='income_statements'):
 
-        # print(len(cols[-4:]))
-        for i in range(1, len(cols[-4:])):
-            # print(i+1)
-            yearly = {item[0]: item[i] for item in statements if len(item) > 1}
-            result.append(yearly)
-        return result
+        # I need to check if there is a local file or maybe check this
+        # from a cache service like redis
+        try:
+            path = os.path.join(os.path.dirname(__file__), 'data',
+                                '{symbol}.json'.format(symbol=symbol))
+            with open(path, 'r') as f:
+                data = json.loads(f.read())
+        except (IOError, OSError) as e:
+            return None
 
-    def fetch_google_statements(self, query='NYSE:ORCL'):
-        pass
+        return data['financial_performance'][query]['yearly']

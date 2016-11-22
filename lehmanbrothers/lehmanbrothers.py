@@ -19,7 +19,9 @@ class Difference(object):
     def __repr__(self):
         text = []
         for attr, value in self.__dict__.iteritems():
-            text.append('Attribute {attr:30} changed by {value:.2%}'.format(attr=attr, value=value))
+            text.append(
+                'Attribute {attr:30} changed by {value:.2%}'.format(attr=attr,
+                                                                    value=value))
         return '\n'.join(text)
 
 
@@ -104,7 +106,7 @@ class FinancialPerformance(object):
             raise ValueError('Not a valid year')
 
         return [income for income in self._income_statements
-                if income.date_released == year][0]
+                if income.year == year][0]
 
     def get_balance_sheet_by_year(self, year=None):
         """
@@ -139,14 +141,18 @@ class FinancialPerformance(object):
         if not end_year:
             return None
 
-        income_statement = [income for income in self._income_statements
-                            if income.date_released == end_year][0]
-        balance_sheets = [bs for bs in self._balance_sheets
-                          if int(bs.date_released) in [int(end_year),
-                                                       int(end_year) - 1]]
-        ebit = float(income_statement.ebit)
-        this_years_assets = float(balance_sheets[0].total_assets)
-        previous_years_assets = float(balance_sheets[1].total_assets)
+        try:
+            income_statement = [income for income in self._income_statements
+                                if income.year == end_year][0]
+            balance_sheets = [bs for bs in self._balance_sheets
+                              if int(bs.year) in [int(end_year),
+                                                  int(end_year) - 1]]
+        except IndexError:
+            return None
+
+        ebit = income_statement.ebit
+        this_years_assets = balance_sheets[0].total_assets
+        previous_years_assets = balance_sheets[1].total_assets
         average_total_assets = (this_years_assets + previous_years_assets) / 2
         return ebit / average_total_assets
 
@@ -158,11 +164,16 @@ class FinancialPerformance(object):
         """
         if not end_year:
             return None
-        income_statement = [income for income in self._income_statements
-                            if income.year == end_year][0]
-        balance_sheets = [bs for bs in self._balance_sheets
-                          if int(bs.year) in [int(end_year),
-                                                       int(end_year) - 1]]
+
+        try:
+            income_statement = [income for income in self._income_statements
+                                if income.year == end_year][0]
+            balance_sheets = [bs for bs in self._balance_sheets
+                              if int(bs.year) in [int(end_year),
+                                                  int(end_year) - 1]]
+        except IndexError:
+            return None
+
         net_income = income_statement.net_income
         this_years_equity = balance_sheets[0].total_stockholder_equity
         previous_years_equity = balance_sheets[1].total_stockholder_equity

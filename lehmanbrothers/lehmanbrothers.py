@@ -12,7 +12,7 @@ class Difference(object):
     def __init__(self, values=None):
         if isinstance(values, dict):
             for key, value in values.items():
-                setattr(self, key, value)
+                super(Difference, self).__setattr__(key, value)
         else:
             raise ValueError('Parameter not a dict')
 
@@ -24,19 +24,28 @@ class Difference(object):
                                                                     value=value))
         return '\n'.join(text)
 
+    def __setattr__(self, name, value):
+        """"""
+        msg = "You are not allowed to set an attribute after init"
+        raise AttributeError(msg)
+
 
 class Statement(object):
     def __init__(self, values=None):
         if isinstance(values, dict):
             for key, value in values.items():
-                setattr(self, key, value)
+                # setattr(self, key, value)
+                super(Statement, self).__setattr__(key, value)
         else:
             raise ValueError('Parameter not a dict')
 
     def __eq__(self, statement):
         differences = {}
         for attr, value_one in self.__dict__.iteritems():
-            value_two = statement.__dict__[attr]
+            try:
+                value_two = statement.__dict__[attr]
+            except KeyError:
+                return None
             if not isinstance(value_one, float) or not isinstance(value_two,
                                                                   float):
                 continue
@@ -48,6 +57,11 @@ class Statement(object):
                 differences[attr] = 0
 
         return Difference(differences)
+
+    def __setattr__(self, name, value):
+        """"""
+        msg = "You are not allowed to set an attribute after init"
+        raise AttributeError(msg)
 
 
 class IncomeStatement(Statement):

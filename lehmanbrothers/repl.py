@@ -1,7 +1,10 @@
 import cmd, sys
 import numpy as np
 import threading
+from pluginbase import PluginBase
 
+import os
+from functools import partial
 
 class App(threading.Thread):
     def __init__(self):
@@ -76,65 +79,132 @@ def threaded_function_test():
     test2.show(block=False)
 
 
-class TurtleShell(cmd.Cmd):
-    intro = 'Welcome to the finance shell.   Type help or ? to list commands.\n'
-    prompt = '(warren) '
-    file = None
-
-    # ----- basic turtle commands -----
-    def do_arima(self, arg):
-        'Execute arima model on time series'
-        pass
-
-    def do_finperf(self, arg):
-        'Execute financial performance of symbol'
-        pass
-
-    def do_undocumented_command_a(self, arg):
-        # thread.start_new_thread(threaded_function, ('test',) )
-        # th = threading.Thread(target=threaded_function)
-        # th.setDaemon(1)
-        # th.start()
-        threaded_function()
-
-    def do_undocumented_command_b(self, arg):
-        # thread.start_new_thread(threaded_function, ('test',) )
-        # th = threading.Thread(target=threaded_function)
-        # th.setDaemon(1)
-        # th.start()
-        threaded_function_test()
-
-    def do_bye(self, arg):
-        'Stop recording, close the turtle window, and exit:  BYE'
-        print('Thank you for using lehmanbrothers')
-        self.close()
-        # bye()
-        return True
-
-    def do_exit(self, arg):
-        'Stop recording, close the turtle window, and exit:  EXIT'
-        print('Thank you for using lehmanbrothers')
-        self.close()
-        # bye()
-        return True
-
-    def precmd(self, line):
-        line = line.lower().split(' ')
-        line = '_'.join(line)
-        if self.file and 'playback' not in line:
-            print(line, self.file)
-        return line
-
-    def close(self):
-        if self.file:
-            self.file.close()
-            self.file = None
+from prompt_toolkit import prompt
 
 
-def parse(arg):
-    'Convert a series of zero or more numbers to an argument tuple'
-    return tuple(map(int, arg.split()))
+from prompt_toolkit import prompt
+from prompt_toolkit.history import InMemoryHistory
 
+def main():
+    here = os.path.abspath(os.path.dirname(__file__))
+    get_path = partial(os.path.join, here)
+
+    plugin_base = PluginBase(package='plugins',
+                             searchpath=[get_path('./plugins')])
+
+    source = plugin_base.make_plugin_source(
+        searchpath=[get_path('./tmp/skata')],
+        identifier='skata')
+
+    available_plugins = [plugin for plugin in source.list_plugins() if plugin != 'abstractplugin']
+    # for plugin in available_plugins:
+    #     object = source.load_plugin(plugin)
+    #     obj = object.Plugin()
+    #     print([i for i in dir(obj) if not i.startswith('__')])
+
+
+    history = InMemoryHistory()
+
+    try:
+        while True:
+            input_string = prompt("> ", history=history)
+
+            if input_string in ['exit', 'quit']:
+                raise KeyboardInterrupt
+
+            tokens = input_string.split(" ")
+            plugin_name = tokens.pop(0)
+
+            # here I need to do a bunch of validations on input string.
+            # maybe each class needs to declare its own validation
+
+            if plugin_name in available_plugins:
+                object = source.load_plugin(plugin_name)
+                obj = object.Plugin(tokens)
+                print(obj.run())
+    except KeyboardInterrupt:
+        print('GoodBye!')
 
 if __name__ == '__main__':
-    TurtleShell().cmdloop()
+    main()
+
+# class Shell(cmd.Cmd):
+#     # For easier usage calculate the path relative to here.
+#     here = os.path.abspath(os.path.dirname(__file__))
+#     get_path = partial(os.path.join, here)
+#
+#     plugin_base = PluginBase(package='plugins',
+#                              searchpath=[get_path('./plugins')])
+#
+#     source = plugin_base.make_plugin_source(
+#         searchpath=[get_path('./tmp/skata')],
+#         identifier='skata')
+#
+#     available_plugins = [plugin for plugin in source.list_plugins() if plugin != 'abstractplugin']
+#     for plugin in available_plugins:
+#         object = source.load_plugin(plugin)
+#         obj = object.Plugin()
+#         print([i for i in dir(obj) if not i.startswith('__')])
+#
+#
+#     intro = 'Finance shell. Type help or ? to list commands.\n'
+#     prompt = '(warren) '
+#     file = None
+#
+#     # ----- basic turtle commands -----
+#     def do_arima(self, arg):
+#         'Execute arima model on time series'
+#         pass
+#
+#     def do_finperf(self, arg):
+#         'Execute financial performance of symbol'
+#         pass
+#
+#     def do_undocumented_command_a(self, arg):
+#         # thread.start_new_thread(threaded_function, ('test',) )
+#         # th = threading.Thread(target=threaded_function)
+#         # th.setDaemon(1)
+#         # th.start()
+#         threaded_function()
+#
+#     def do_undocumented_command_b(self, arg):
+#         # thread.start_new_thread(threaded_function, ('test',) )
+#         # th = threading.Thread(target=threaded_function)
+#         # th.setDaemon(1)
+#         # th.start()
+#         threaded_function_test()
+#
+#     def do_bye(self, arg):
+#         'Stop recording, close the turtle window, and exit:  BYE'
+#         print('Thank you for using lehmanbrothers')
+#         self.close()
+#         # bye()
+#         return True
+#
+#     def do_exit(self, arg):
+#         'Stop recording, close the turtle window, and exit:  EXIT'
+#         print('Thank you for using lehmanbrothers')
+#         self.close()
+#         # bye()
+#         return True
+#
+#     def precmd(self, line):
+#         line = line.lower().split(' ')
+#         line = '_'.join(line)
+#         if self.file and 'playback' not in line:
+#             print(line, self.file)
+#         return line
+#
+#     def close(self):
+#         if self.file:
+#             self.file.close()
+#             self.file = None
+#
+#
+# def parse(arg):
+#     'Convert a series of zero or more numbers to an argument tuple'
+#     return tuple(map(int, arg.split()))
+#
+#
+# if __name__ == '__main__':
+#     Shell().cmdloop()

@@ -2,7 +2,8 @@ import cmd, sys
 import numpy as np
 import threading
 from pluginbase import PluginBase
-
+from prompt_toolkit import prompt
+from prompt_toolkit.history import InMemoryHistory
 import os
 from functools import partial
 
@@ -79,12 +80,6 @@ def threaded_function_test():
     test2.show(block=False)
 
 
-from prompt_toolkit import prompt
-
-
-from prompt_toolkit import prompt
-from prompt_toolkit.history import InMemoryHistory
-
 def main():
     here = os.path.abspath(os.path.dirname(__file__))
     get_path = partial(os.path.join, here)
@@ -96,12 +91,12 @@ def main():
         searchpath=[get_path('./tmp/skata')],
         identifier='skata')
 
-    available_plugins = [plugin for plugin in source.list_plugins() if plugin != 'abstractplugin']
+    available_plugins = [plugin for plugin in source.list_plugins() 
+                         if plugin != 'abstractplugin']
     # for plugin in available_plugins:
     #     object = source.load_plugin(plugin)
     #     obj = object.Plugin()
     #     print([i for i in dir(obj) if not i.startswith('__')])
-
 
     history = InMemoryHistory()
 

@@ -7,6 +7,7 @@ from prompt_toolkit.history import InMemoryHistory
 import os
 from functools import partial
 
+
 class App(threading.Thread):
     def __init__(self):
         threading.Thread.__init__(self)
@@ -80,6 +81,14 @@ def threaded_function_test():
     test2.show(block=False)
 
 
+def isfloat(element):
+    try:
+        float(element)
+        return True
+    except ValueError:
+        return False
+
+
 def main():
     here = os.path.abspath(os.path.dirname(__file__))
     get_path = partial(os.path.join, here)
@@ -108,6 +117,12 @@ def main():
                 raise KeyboardInterrupt
 
             tokens = input_string.split(" ")
+            for i, token in enumerate(tokens):
+                if isfloat(token):
+                    tokens[i] = float(token) 
+                if token.isnumeric():
+                    tokens[i] = int(token)
+
             plugin_name = tokens.pop(0)
 
             # here I need to do a bunch of validations on input string.

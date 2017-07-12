@@ -1,5 +1,11 @@
 from .abstractplugin import AbstractPlugin
 from voluptuous import Schema, ExactSequence
+from datetime import datetime
+
+
+def Date(fmt='%Y-%m-%d'):
+    return lambda v: datetime.strptime(v, fmt)
+
 
 class Plugin(AbstractPlugin):
 
@@ -11,8 +17,6 @@ class Plugin(AbstractPlugin):
     def run(self):
         if not self._args:
             return None
-
-        print(self._args)
         return "hello"
 
     @property
@@ -20,26 +24,13 @@ class Plugin(AbstractPlugin):
         return self._name
 
     def _validate_arguments(self, args):
-        validate = Schema(ExactSequence([str, str, str]))
+        print(args)
+        seq = [str, Date(), Date(), int]
+        validate = Schema(ExactSequence(seq))
         try:
             validate(args)
         except Exception:
             print('Invalid input')
-            print(ExactSequence([str, str, str]))
+            print(ExactSequence(seq))
             return []
         return args
-
-    def input_schema(self):
-        schema = Schema({
-            'symbol': str,
-            'start_date': str,
-            'end_date': str,
-            'predict_days': int,
-        })
-        return schema
-
-    def output_schema(self):
-        schema = Schema({
-            'predicted_price': float
-        })
-        return schema

@@ -3,12 +3,14 @@ from datetime import date
 from marshmallow import Schema, fields, pprint
 from datetime import datetime
 import os
+import pandas as pd
 
 class ArgumentsSchema(Schema):
     date_from = fields.DateTime(required=True, format='%Y-%m-%d') 
     date_to = fields.DateTime(required=True, format='%Y-%m-%d')
     dependent_variable = fields.Str(required=True)
-    independent_variables = fields.List(fields.String())
+    days_to_predict = fields.Int(required=True)
+    # independent_variables = fields.List(fields.String())
     
 # class RequestSchema(Schema):
 #     function = fields.Str(required=True)
@@ -17,8 +19,10 @@ class ArgumentsSchema(Schema):
 
 class Plugin(AbstractPlugin):
 
-    def __init__(self, filename=None, *args):
+    def __init__(self, data_service, config=None, filename=None, *args):
         self._name = __name__
+        self._data_service = data_service
+        self._config = config
         self._filename = filename
         self._args = self._validate_arguments(*args)
 
@@ -26,16 +30,10 @@ class Plugin(AbstractPlugin):
         if not self._args:
             return None
 
-        import quandl
-        quandl.ApiConfig.api_key = "Hxy5g7TB9gbWyzd42vys"
-
-        data = quandl.get_table('WIKI/PRICES', 
-                                qopts = { 'columns': ['ticker', 'date', 'close'] }, 
-                                ticker = self._args['dependent_variable'], 
-                                date = { 'gte': self._args['date_from'], 'lte': self._args['date_to'] })
-
+        cached_file_path = os.path.join(self._config['app']['app_directory'], 'cache', self._filename)
         
-        print(data.to_csv())
+        data = self._data_service.get_data(self._args, cached_file_path)
+        print(data)
 
         return "hello"
 
@@ -49,7 +47,8 @@ class Plugin(AbstractPlugin):
                 'date_from': args.pop(0),
                 'date_to': args.pop(0),
                 'dependent_variable': args.pop(0),
-                'independent_variables': [arg for arg in args],
+                # 'independent_variables': [arg for arg in args],
+                'days_to_predict': int(args.pop(0)),
             }
 
             result = ArgumentsSchema().load(arguments)

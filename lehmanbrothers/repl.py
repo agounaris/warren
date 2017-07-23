@@ -2,10 +2,13 @@ import cmd, sys
 import numpy as np
 import threading
 import os
+import errno
 from pluginbase import PluginBase
 from prompt_toolkit import prompt
 from prompt_toolkit.history import InMemoryHistory
 from functools import partial
+import configparser
+from service import find_widget
 
 class App(threading.Thread):
     def __init__(self):
@@ -97,21 +100,39 @@ def main():
     here = os.path.abspath(os.path.dirname(__file__))
     get_path = partial(os.path.join, here)
 
+    config = configparser.ConfigParser()
+    config.read(os.path.join(os.path.abspath(os.path.dirname(__file__)), 'conf', 'lehman.ini'))
+
+
     plugin_base = PluginBase(package='plugins',
                              searchpath=[get_path('./plugins')])
 
+    # register additional plugins command line parameter
     source = plugin_base.make_plugin_source(
         searchpath=[get_path('./tmp/skata')],
         identifier='skata')
 
     available_plugins = [plugin for plugin in source.list_plugins() if plugin != 'abstractplugin']
-    # for plugin in available_plugins:
-    #     object = source.load_plugin(plugin)
-    #     obj = object.Plugin()
-    #     print([i for i in dir(obj) if not i.startswith('__')])
-
 
     history = InMemoryHistory()
+
+    print(config.sections())
+
+    # init app directory
+    if not os.path.exists(config['app']['app_directory']):
+        try:
+            os.makedirs('{}/cache'.format(config['app']['app_directory']))
+        except OSError as e:
+            if e.errno != errno.EEXIST:
+                raise
+
+    # init cache source command line parameter
+    cache_service_class = find_widget('cache', 'filestore')
+    cache_service = cache_service_class(config)
+
+    # init data source, command line parameter
+    data_service_class = find_widget('datasource', 'quandl')
+    data_service = data_service_class(config, cache_service)
 
     try:
         while True:
@@ -124,12 +145,13 @@ def main():
             filename = input_string.replace(" ", "_")
             plugin_name = tokens.pop(0)
 
+            # data_service.set_arguments(tokens)
             # here I need to do a bunch of validations on input string.
             # maybe each class needs to declare its own validation
 
             if plugin_name in available_plugins:
                 object = source.load_plugin(plugin_name)
-                obj = object.Plugin(filename, tokens)
+                obj = object.Plugin(data_service, config, filename, tokens)
                 print(obj.run())
     except KeyboardInterrupt:
         print('GoodBye!')

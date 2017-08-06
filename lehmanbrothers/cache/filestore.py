@@ -11,7 +11,7 @@ class DataStore(object):
 
     def get_data(self, key):
         try:
-            data = pd.read_csv(key)
+            data = pd.read_csv(key, parse_dates=True, index_col=2)
         except Exception:
             return None
         return data

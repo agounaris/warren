@@ -1,0 +1,21 @@
+{
+    "arguments": {
+        "from": "2012-01-01",
+        "to": "2014-01-01",
+        "dependent_variable": {
+            "type": "stock",
+            "symbol": "appl"
+        },
+        "independent_variables": [
+            {
+                "type": "index",
+                "symbol": "^IXIC"
+            },
+            {
+                "type": "stock",
+                "symbol": "msft"
+            }
+        ]
+    },
+    "function": "regression"
+}

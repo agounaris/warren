@@ -5,7 +5,7 @@ import os
 import errno
 from pluginbase import PluginBase
 from prompt_toolkit import prompt
-from prompt_toolkit.history import InMemoryHistory
+from prompt_toolkit.history import InMemoryHistory, FileHistory
 from functools import partial
 import configparser
 from service import find_widget
@@ -87,11 +87,11 @@ from datetime import date
 from marshmallow import Schema, fields, pprint
 
 class ArgumentsSchema(Schema):
-    date_from = fields.DateTime(required=True, format='%Y-%m-%d') 
+    date_from = fields.DateTime(required=True, format='%Y-%m-%d')
     date_to = fields.DateTime(required=True, format='%Y-%m-%d')
     dependent_variable = fields.Str(required=True)
     independent_variables = fields.List(fields.String())
-    
+
 class RequestSchema(Schema):
     function = fields.Str(required=True)
     arguments = fields.Nested(ArgumentsSchema())
@@ -114,7 +114,8 @@ def main():
 
     available_plugins = [plugin for plugin in source.list_plugins() if plugin != 'abstractplugin']
 
-    history = InMemoryHistory()
+    # history = InMemoryHistory()
+    history = FileHistory('/tmp/history.txt')
 
     print(config.sections())
 
@@ -151,8 +152,16 @@ def main():
 
             if plugin_name in available_plugins:
                 object = source.load_plugin(plugin_name)
-                obj = object.Plugin(data_service, config, filename, tokens)
-                print(obj.run())
+                try:
+                    obj = object.Plugin(data_service, config, filename, tokens)
+                except (TypeError, AttributeError) as e:
+                    print('There was an issue initializing the {} object: {}'.format(plugin_name, e))
+
+                try:
+                    print(obj.run())
+                except Exception as e:
+                    print('There was an issue running the {} object: {}'.format(plugin_name, e))
+
     except KeyboardInterrupt:
         print('GoodBye!')
 

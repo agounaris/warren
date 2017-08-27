@@ -143,7 +143,7 @@ def main():
                 raise KeyboardInterrupt
 
             tokens = input_string.split(" ")
-            filename = input_string.replace(" ", "_")
+            # filename = input_string.replace(" ", "_")
             plugin_name = tokens.pop(0)
 
             # data_service.set_arguments(tokens)
@@ -153,14 +153,17 @@ def main():
             if plugin_name in available_plugins:
                 object = source.load_plugin(plugin_name)
                 try:
-                    obj = object.Plugin(data_service, config, filename, tokens)
+                    obj = object.Plugin(data_service, config, tokens)
                 except (TypeError, AttributeError) as e:
                     print('There was an issue initializing the {} object: {}'.format(plugin_name, e))
 
                 try:
                     print(obj.run())
                 except Exception as e:
-                    print('There was an issue running the {} object: {}'.format(plugin_name, e))
+                    print('There was an issue running '
+                          'the {} object: {}: {}'.format(plugin_name,
+                                                         repr(e),
+                                                         str(e)))
 
     except KeyboardInterrupt:
         print('GoodBye!')

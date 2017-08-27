@@ -3,50 +3,45 @@ from datetime import date
 from marshmallow import Schema, fields, pprint
 from datetime import datetime
 import os
+import sys
 import pandas as pd
 import numpy as np
 import statsmodels.api as sm
 import statsmodels.tsa.api as smt
 from statsmodels.tsa.arima_model import ARIMA, ARIMAResults
 
+
 class ArgumentsSchema(Schema):
     date_from = fields.DateTime(required=True, format='%Y-%m-%d')
     date_to = fields.DateTime(required=True, format='%Y-%m-%d')
     dependent_variable = fields.Str(required=True)
     days_to_predict = fields.Int(required=True)
-    # independent_variables = fields.List(fields.String())
-
-# class RequestSchema(Schema):
-#     function = fields.Str(required=True)
-#     arguments = fields.Nested(ArgumentsSchema())
 
 
 class Plugin(AbstractPlugin):
-
-    def __init__(self, data_service, config=None, filename=None, *args):
+    def __init__(self, data_service, config=None, *args):
         self._name = __name__
         self._data_service = data_service
         self._config = config
-        self._filename = filename
         self._args = self._validate_arguments(*args)
 
     def run(self):
         if not self._args:
             return None
 
-        cached_file_path = os.path.join(self._config['app']['app_directory'], 'cache', self._filename)
+        data = self._data_service.get_data(self._args)
 
-        data = self._data_service.get_data(self._args, cached_file_path)
+        original_data = data.fillna(method='bfill')
 
-        original_data = data.fillna(method='ffill')
-
-        ran = pd.date_range(self._args['date_from'], self._args['date_to'], freq='D')
+        ran = pd.date_range(self._args['date_from'], self._args['date_to'],
+                            freq='D')
         original_data = pd.Series(original_data['close'], index=ran)
 
-        original_data = original_data.fillna(method='ffill')
+        original_data = original_data.fillna(method='bfill')
         split = len(original_data) - int(self._args['days_to_predict'])
 
-        train_data, prediction_data = original_data[:split], original_data[split:]
+        train_data, prediction_data = original_data[:split], original_data[
+                                                             split:]
 
         from collections import namedtuple
 
@@ -54,7 +49,8 @@ class Plugin(AbstractPlugin):
         stationarity_results = ADF(*smt.adfuller(train_data))._asdict()
         significance_level = 0.01
 
-        order = (1, 0, 1)  # if the series are stationary, there is no need for an integrated order
+        # if the series are stationary, no need for an integrated order
+        order = (1, 0, 1)
         if stationarity_results['pvalue'] > significance_level:
             order = (1, 2, 1)
 
@@ -64,11 +60,13 @@ class Plugin(AbstractPlugin):
                                      prediction_data.index[-1],
                                      typ='levels')
 
+        print(results)
+
         print(prediction.tail(self._args['days_to_predict']))
 
-        import numpy as np
-        import matplotlib.pyplot as plt
-        import networkx as nx
+        # import numpy as np
+        # import matplotlib.pyplot as plt
+        # import networkx as nx
 
         # plt.rcParams["font.size"] = 10
         #
@@ -123,6 +121,6 @@ class Plugin(AbstractPlugin):
             results = mod.fit(disp=0)
         except ValueError:
             print('No correct model with {order}'.format(order=order))
-            order = (order(0), order(1)+1, order(2))
+            order = (order(0), order(1) + 1, order(2))
             self._model_fit(train_data=train_data, order=order)
         return results

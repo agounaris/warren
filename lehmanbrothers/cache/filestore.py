@@ -52,3 +52,22 @@ class DataStore(object):
         result = pd.concat(frames)
 
         return result
+
+    def save_statements(self, tokens, data):
+        filename = 'statements_{}.csv'.format(tokens['ticker'].upper())
+        cached_file_path = os.path.join(
+                self._config['app']['app_directory'], 'cache', filename)
+        with open(cached_file_path, 'w') as file:
+            file.write(data)
+
+    def get_statements(self, tokens):
+        filename = 'statements_{}.csv'.format(tokens['ticker'].upper())
+        try:
+            cached_file_path = os.path.join(
+                self._config['app']['app_directory'], 'cache', filename)
+            print(cached_file_path)
+            data = pd.read_csv(cached_file_path, parse_dates=True, index_col=0)
+        except Exception:
+            return None
+
+        return data

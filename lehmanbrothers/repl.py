@@ -156,17 +156,19 @@ def main():
                     obj = object.Plugin(data_service, config, tokens)
                 except (TypeError, AttributeError) as e:
                     print('There was an issue initializing the {} object: {}'.format(plugin_name, e))
+                    continue
 
-                try:
-                    print(obj.run())
-                except Exception as e:
-                    print('There was an issue running '
-                          'the {} object: {}: {}'.format(plugin_name,
-                                                         repr(e),
-                                                         str(e)))
+                # try:
+                print(obj.run())
+                # except Exception as e:
+                    # print('There was an issue running '
+                          # 'the {} object: {}: {}'.format(plugin_name,
+                                                         # repr(e),
+                                                         # str(e)))
 
     except KeyboardInterrupt:
-        print('GoodBye!')
+        # just exit
+        pass
 
 if __name__ == '__main__':
     main()

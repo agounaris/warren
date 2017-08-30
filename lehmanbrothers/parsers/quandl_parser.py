@@ -59,10 +59,31 @@ def main(database, symbol, mode):
         'symbol': symbol}
 
     codes = [
-        'INTANGIBLES', 'INVENTORY', 'ASSETS', 'ASSETSC', 'LIABILITIESC',
-        'LIABILITIES', 'EQUITY', 'CAPEX', 'DEPAMOR', 'NCFX', 'NCF', 'NCFF',
-        'NETINC', 'NCFI', 'NCFO', 'GP', 'TAXEXP', 'INTEXP', 'NETINCCMN',
-        'RND', 'SGNA', 'REVENUE'
+        'INTANGIBLES',
+        'INVENTORY',
+        'ASSETS',
+        'ASSETSC',
+        'LIABILITIESC',
+        'LIABILITIES',
+        'EQUITY',
+        'CAPEX',
+        'DEPAMOR',
+        'NCFX',
+        'NCF',
+        'NCFF',
+        'NETINC',
+        'NCFI',
+        'NCFO',
+        'GP',
+        'TAXEXP',
+        'INTEXP',
+        'NETINCCMN',
+        'RND',
+        'SGNA',
+        'REVENUE',
+        'EBIT',
+        'RETEARN',
+        'PAYABLES',
     ]
 
     needed_quandl_codes = {}
@@ -73,75 +94,39 @@ def main(database, symbol, mode):
                                                              m=mode)
 
     balance_sheet = {
-        'accounts_payable': 0.0,
-        'capital_surplus': 0.0,
-        'cash_and_cash_equivalents': 0.0,
-        'common_stocks': 0.0,
-        'date_released': '2016-01-01',
-        'deferred_asset_charges': 0.0,
-        'deferred_liabilities_charges': 0.0,
-        'fixed_assets': 0.0,
-        'goodwill': needed_quandl_codes['INTANGIBLES'],
-        'intangible_assets': 0.0,
+        'intengibles': needed_quandl_codes['INTANGIBLES'],
         'inventory': needed_quandl_codes['INVENTORY'],
-        'long_term_debt': 0.0,
-        'long_term_investments': 0.0,
-        'minority_interest': 0.0,
-        'net_receivables': 0.0,
-        'other_assets': 0.0,
-        'other_current_assets': 0.0,
-        'other_current_liabilities': 0.0,
-        'other_liabilities': 0.0,
-        'other_stockholder_equity': 0.0,
-        'retained_income': 0.0,
-        'short_current_long_term_debt': 0.0,
-        'short_term_investments': 0.0,
-        'total_assets': needed_quandl_codes['ASSETS'],
         'total_current_assets': needed_quandl_codes['ASSETSC'],
+        'total_assets': needed_quandl_codes['ASSETS'],
+        'payables': needed_quandl_codes['PAYABLES'],
         'total_current_liabilities': needed_quandl_codes['LIABILITIESC'],
         'total_liabilities': needed_quandl_codes['LIABILITIES'],
-        'total_liabilities_and_equity': 0.0,
+        'retained_earnings': needed_quandl_codes['RETEARN'],
         'total_stockholder_equity': needed_quandl_codes['EQUITY'],
-        'treasury_stock': 0.0,
-        'year': 2016}
+        'total_liabilities_and_equity': needed_quandl_codes['LIABILITIES']+needed_quandl_codes['EQUITY'],
+        'year': 2016
+        }
 
     cash_flow = {
         'capital_expenditures':needed_quandl_codes['CAPEX'],
         'date_released': '2016-01-01',
         'depreciation': needed_quandl_codes['DEPAMOR'],
         'exchange_rate_effect': needed_quandl_codes['NCFX'],
-        'inventory_changes': 0.0,
-        'investments': 0.0,
-        'liability_changes': 0.0,
-        'net_borrowings': 0.0,
         'net_cash_flow': needed_quandl_codes['NCF'],
-        'net_financing_cash_flow': needed_quandl_codes['NCFF'],
         'net_income': needed_quandl_codes['NETINC'],
-        'net_income_adjustments': 0.0,
         'net_investing_cash_flow': needed_quandl_codes['NCFI'],
         'net_operating_cash_flow': needed_quandl_codes['NCFO'],
-        'other_changes': 0.0,
-        'other_financing_activities_cash_flow': 0.0,
-        'other_investing_activities': 0.0,
-        'receivable_changes': 0.0,
-        'sale_purchase_of_stock': 0.0,
+        'net_financing_cash_flow': needed_quandl_codes['NCFF'],
         'year': 2016}
 
     income_statement = {
-        'additional_income_expense': 0.0,
-        'cost_of_revenue': 0.0,
         'date_released': '2016-01-01',
-        'ebit': needed_quandl_codes['ASSETS'],
+        'ebit': needed_quandl_codes['EBIT'],
         'gross_profit': needed_quandl_codes['GP'],
-        'income_before_tax': 0.0,
         'income_tax': needed_quandl_codes['TAXEXP'],
         'interest_expense': needed_quandl_codes['INTEXP'],
-        'minority_interest': 0.0,
         'net_income': needed_quandl_codes['NETINC'],
         'net_income_to_common_shares': needed_quandl_codes['NETINCCMN'],
-        'non_recurring_items': 0.0,
-        'operating_income': 0.0,
-        'other_operating_items': 0.0,
         'research_and_development': needed_quandl_codes['RND'],
         'sales_general_and_admin': needed_quandl_codes['SGNA'],
         'total_revenue': needed_quandl_codes['REVENUE'],
@@ -154,11 +139,12 @@ def main(database, symbol, mode):
 
     # Lets check if the symbol data file exists otherwise call the quandl api
     if not os.path.isfile(values_from_quandl_file):
-        response = quandl.get(needed_quandl_codes.values()).to_dict()
+        # print(list(needed_quandl_codes.values()))
+        response = quandl.get(list(needed_quandl_codes.values())).to_dict()
         quandl_data = {}
-        for key, value in response.iteritems():
+        for key, value in response.items():
             timeseries = {}
-            for timestamp, numeric_value in value.iteritems():
+            for timestamp, numeric_value in value.items():
                 time_key = '{}-{}-{}'.format(timestamp.day, timestamp.month,
                                              timestamp.year)
                 timeseries[time_key] = numeric_value
@@ -186,7 +172,7 @@ def main(database, symbol, mode):
         parsed_balance_sheet['year'] = year.split('-')[-1]
         parsed_income_statement['year'] = year.split('-')[-1]
         parsed_cash_flow['year'] = year.split('-')[-1]
-        for element, value in balance_sheet.iteritems():
+        for element, value in balance_sheet.items():
             if element == 'date_released':
                 parsed_balance_sheet['date_released'] = year
 
@@ -200,7 +186,7 @@ def main(database, symbol, mode):
 
         balance_sheets.append(parsed_balance_sheet)
 
-        for element, value in income_statement.iteritems():
+        for element, value in income_statement.items():
             if element == 'date_released':
                 parsed_income_statement['date_released'] = year
 
@@ -214,7 +200,7 @@ def main(database, symbol, mode):
 
         income_statements.append(parsed_income_statement)
 
-        for element, value in cash_flow.iteritems():
+        for element, value in cash_flow.items():
             if element == 'date_released':
                 parsed_cash_flow['date_released'] = year
 

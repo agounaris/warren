@@ -30,7 +30,7 @@ class Plugin(AbstractPlugin):
             return None
 
         data = self._data_service.get_data(self._args)
-        print(data)
+        # print(data)
 
         split_data = {
             self._args['dependent_variable']: list(
@@ -45,9 +45,9 @@ class Plugin(AbstractPlugin):
             formula = '{formula} {symbol} {ticker}'.format(formula=formula, symbol=symbol, ticker=ticker)
 
 
-        print(formula)
+        # print(formula)
         data = pd.DataFrame(split_data).dropna()
-        print(data.head())
+        # print(data.head())
         # X = range(1, len(split_data[0]))
         # X = sm.add_constant(X)
         model = sm.ols(formula=formula, data=data)
@@ -61,6 +61,7 @@ class Plugin(AbstractPlugin):
         return self._name
 
     def _validate_arguments(self, args):
+        print(args)
         try:
             arguments = {
                 'date_from': args.pop(0),

@@ -5,7 +5,6 @@ from api.statements import IncomeStatement
 from api.statements import CashFlow
 from api.statements import FinancialPerformance
 
-
 codes = [
     'INTANGIBLES',
     'INVENTORY',

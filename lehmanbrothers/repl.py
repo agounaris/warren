@@ -1,4 +1,3 @@
-import cmd, sys
 import numpy as np
 import threading
 import os
@@ -9,6 +8,7 @@ from prompt_toolkit.history import InMemoryHistory, FileHistory
 from functools import partial
 import configparser
 from service import find_widget
+
 
 class App(threading.Thread):
     def __init__(self):
@@ -83,26 +83,13 @@ def threaded_function_test():
     test2.show(block=False)
 
 
-from datetime import date
-from marshmallow import Schema, fields, pprint
-
-class ArgumentsSchema(Schema):
-    date_from = fields.DateTime(required=True, format='%Y-%m-%d')
-    date_to = fields.DateTime(required=True, format='%Y-%m-%d')
-    dependent_variable = fields.Str(required=True)
-    independent_variables = fields.List(fields.String())
-
-class RequestSchema(Schema):
-    function = fields.Str(required=True)
-    arguments = fields.Nested(ArgumentsSchema())
-
 def main():
     here = os.path.abspath(os.path.dirname(__file__))
     get_path = partial(os.path.join, here)
 
     config = configparser.ConfigParser()
-    config.read(os.path.join(os.path.abspath(os.path.dirname(__file__)), 'conf', 'lehman.ini'))
-
+    config.read(os.path.join(os.path.abspath(
+        os.path.dirname(__file__)), 'conf', 'lehman.ini'))
 
     plugin_base = PluginBase(package='plugins',
                              searchpath=[get_path('./plugins')])
@@ -112,7 +99,8 @@ def main():
         searchpath=[get_path('./tmp/skata')],
         identifier='skata')
 
-    available_plugins = [plugin for plugin in source.list_plugins() if plugin != 'abstractplugin']
+    available_plugins = [plugin for plugin in source.list_plugins()
+                         if plugin != 'abstractplugin']
 
     # history = InMemoryHistory()
     history = FileHistory('/tmp/history.txt')
@@ -155,20 +143,22 @@ def main():
                 try:
                     obj = object.Plugin(data_service, config, tokens)
                 except (TypeError, AttributeError) as e:
-                    print('There was an issue initializing the {} object: {}'.format(plugin_name, e))
+                    print('There was an issue initializing \
+                           the {} object: {}'.format(plugin_name, e))
                     continue
 
-                # try:
-                print(obj.run())
-                # except Exception as e:
-                    # print('There was an issue running '
-                          # 'the {} object: {}: {}'.format(plugin_name,
-                                                         # repr(e),
-                                                         # str(e)))
+                try:
+                    print(obj.run())
+                except Exception as e:
+                    print('There was an issue running '
+                          'the {} object: {}: {}'.format(plugin_name,
+                                                         repr(e),
+                                                         str(e)))
 
     except KeyboardInterrupt:
         # just exit
         pass
+
 
 if __name__ == '__main__':
     main()

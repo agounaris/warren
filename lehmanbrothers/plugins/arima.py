@@ -14,7 +14,7 @@ from statsmodels.tsa.arima_model import ARIMA, ARIMAResults
 class ArgumentsSchema(Schema):
     date_from = fields.DateTime(required=True, format='%Y-%m-%d')
     date_to = fields.DateTime(required=True, format='%Y-%m-%d')
-    dependent_variable = fields.Str(required=True)
+    variable = fields.Str(required=True)
     days_to_predict = fields.Int(required=True)
 
 
@@ -33,7 +33,8 @@ class Plugin(AbstractPlugin):
 
         original_data = data.fillna(method='bfill')
 
-        ran = pd.date_range(self._args['date_from'], self._args['date_to'],
+        ran = pd.date_range(self._args['date_from'],
+                            self._args['date_to'],
                             freq='D')
         original_data = pd.Series(original_data['close'], index=ran)
 
@@ -99,7 +100,7 @@ class Plugin(AbstractPlugin):
             arguments = {
                 'date_from': args.pop(0),
                 'date_to': args.pop(0),
-                'dependent_variable': args.pop(0),
+                'variable': args.pop(0),
                 'days_to_predict': int(args.pop(0)),
             }
 

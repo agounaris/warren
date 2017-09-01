@@ -20,8 +20,9 @@ class Difference(object):
         text = []
         for attr, value in self.__dict__.iteritems():
             text.append(
-                'Attribute {attr:30} changed by {value:.2%}'.format(attr=attr,
-                                                                    value=value))
+                'Attribute {attr:30} changed \
+                by {value:.2%}'.format(attr=attr,
+                                       value=value))
         return '\n'.join(text)
 
     def __setattr__(self, name, value):

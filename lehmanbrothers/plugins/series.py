@@ -17,11 +17,10 @@ class ArgumentsSchema(Schema):
 
 class Plugin(AbstractPlugin):
 
-    def __init__(self, data_service, config=None, filename=None, *args):
+    def __init__(self, data_service, config=None, *args):
         self._name = __name__
         self._data_service = data_service
         self._config = config
-        self._filename = filename
         self._args = self._validate_arguments(*args)
 
     def run(self):

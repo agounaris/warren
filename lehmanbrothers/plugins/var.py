@@ -35,13 +35,15 @@ class Plugin(AbstractPlugin):
             split_data[ticker] = data[data['ticker'] == ticker]['close']
 
         data = pd.DataFrame(split_data).dropna()
-        print(data.head())
 
         model = VAR(data)
-        results = model.fit(2)
-        print(results.summary())
+        result = model.fit(2)
+        print(result.summary())
+        result.test_causality(self._args['dependent_variable'],
+                              self._args['independent_variables'],
+                              kind='f')
 
-        return "var"
+        return result
 
     @property
     def name(self):

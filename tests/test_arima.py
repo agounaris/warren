@@ -24,4 +24,4 @@ class TestArima(object):
 
         with pytest.raises(Exception) as e_info:
             plugin = Plugin('test', 'test', args)
-
+            assert isinstance(plugin, None)

@@ -1,6 +1,28 @@
-from lehmanbrothers.api.statements import *
+from lehmanbrothers.api.statements import BalanceSheet
+from lehmanbrothers.api.statements import IncomeStatement
+from lehmanbrothers.api.statements import CashFlow
+from lehmanbrothers.api.statements import FinancialPerformance
 
-data = {'test': 1, 'test2': 2, 'year': 2016}
+
+data = {
+    'ebit': 100,
+    'total_assets': 100,
+    'net_income': 100,
+    'total_stockholder_equity': 100,
+    'gross_profit': 100,
+    'total_revenue': 100,
+    'year': 2016
+}
+
+previous_data = {
+    'ebit': 100,
+    'total_assets': 100,
+    'net_income': 100,
+    'total_stockholder_equity': 100,
+    'gross_profit': 100,
+    'total_revenue': 100,
+    'year': 2016
+}
 
 
 class TestApi(object):
@@ -16,7 +38,7 @@ class TestApi(object):
         assert isinstance(income_statement, IncomeStatement)
 
     def test_init_cash_flow(self):
-        cash_flow = CashFlow({'test': 1, 'test2': 2})
+        cash_flow = CashFlow(data)
 
         assert isinstance(cash_flow, CashFlow)
 
@@ -68,3 +90,45 @@ class TestApi(object):
                                   [cash_flow])
 
         assert isinstance(fs.get_cash_flow_by_year(2016), CashFlow)
+
+    def test_return_on_assets(self):
+        bss = [BalanceSheet(data), BalanceSheet(previous_data)]
+        ics = [IncomeStatement(data), IncomeStatement(previous_data)]
+        cfs = [CashFlow(data), CashFlow(previous_data)]
+        fs = FinancialPerformance('TEST',
+                                  bss,
+                                  ics,
+                                  cfs)
+
+        assert fs.return_on_asset(2016) == 1.0
+
+    def test_return_on_equity(self):
+        bss = [BalanceSheet(data), BalanceSheet(previous_data)]
+        ics = [IncomeStatement(data), IncomeStatement(previous_data)]
+        cfs = [CashFlow(data), CashFlow(previous_data)]
+        fs = FinancialPerformance('TEST',
+                                  bss,
+                                  ics,
+                                  cfs)
+
+        assert fs.return_on_equity(2016) == 1.0
+
+    def test_profit_margin(self):
+        bss = [BalanceSheet(data), BalanceSheet(previous_data)]
+        ics = [IncomeStatement(data), IncomeStatement(previous_data)]
+        cfs = [CashFlow(data), CashFlow(previous_data)]
+        fs = FinancialPerformance('TEST',
+                                  bss,
+                                  ics,
+                                  cfs)
+
+        assert fs.profit_margin(2016) == 1.0
+
+    def test_balance_sheet_compare(self):
+        assert BalanceSheet(data) == BalanceSheet(previous_data)
+
+    def test_income_statement_compare(self):
+        assert IncomeStatement(data) == IncomeStatement(previous_data)
+
+    def test_cash_flow_compare(self):
+        assert CashFlow(data) == CashFlow(previous_data)

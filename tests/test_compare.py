@@ -1,14 +1,14 @@
-from lehmanbrothers.plugins.var import Plugin
+from lehmanbrothers.plugins.compare import Plugin
 
 
-class TestVar(object):
+class TestSeries(object):
 
     def test_init(self):
         args = [
-            '2015-01-10',
-            '2015-10-10',
             'MSFT',
-            'AAPL',
+            'balance_sheet',
+            '2015',
+            '2016',
         ]
         plugin = Plugin('test', 'test', args)
         assert isinstance(plugin, Plugin)

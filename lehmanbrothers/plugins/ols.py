@@ -2,6 +2,7 @@ from .abstractplugin import AbstractPlugin
 from marshmallow import Schema, fields, pprint
 from datetime import datetime
 import os
+import numpy as np
 # import statsmodels.api as sm
 import statsmodels.formula.api as sm
 import pandas as pd
@@ -30,7 +31,6 @@ class Plugin(AbstractPlugin):
             return None
 
         data = self._data_service.get_data(self._args)
-        # print(data)
 
         split_data = {
             self._args['dependent_variable']: list(
@@ -45,16 +45,17 @@ class Plugin(AbstractPlugin):
             formula = '{formula} {symbol} {ticker}'.format(formula=formula, symbol=symbol, ticker=ticker)
 
 
-        # print(formula)
         data = pd.DataFrame(split_data).dropna()
-        # print(data.head())
-        # X = range(1, len(split_data[0]))
-        # X = sm.add_constant(X)
-        model = sm.ols(formula=formula, data=data)
-        results = model.fit()
-        print(results.summary())
 
-        return "ols"
+        model = sm.ols(formula=formula, data=data)
+        result = model.fit()
+        print(result.summary())
+
+        prediction = result.predict()
+        print('Price of {} for the last day is {}'.format(self._args['dependent_variable'],
+                                                          prediction[-1]))
+
+        return 'ols'
 
     @property
     def name(self):

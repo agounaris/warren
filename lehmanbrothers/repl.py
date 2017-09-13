@@ -4,11 +4,17 @@ import os
 import errno
 from pluginbase import PluginBase
 from prompt_toolkit import prompt
-from prompt_toolkit.history import InMemoryHistory, FileHistory
+from prompt_toolkit.history import InMemoryHistory
+from prompt_toolkit.history import FileHistory
 from functools import partial
 import configparser
-from service import find_widget
+import matplotlib.pyplot as plt
 
+
+def plot():
+    plt.plot([1,2,3])
+    plt.draw()
+    plt.show(block=False)
 
 class App(threading.Thread):
     def __init__(self):
@@ -19,9 +25,6 @@ class App(threading.Thread):
         self.root.quit()
 
     def run(self):
-        import matplotlib.pyplot as plt
-        import numpy as np
-
         t = np.arange(0.0, 2.0, 0.01)
         s = 1 + np.sin(2 * np.pi * t)
         plt.plot(t, s)
@@ -31,56 +34,24 @@ class App(threading.Thread):
         plt.title('A financial chart')
         plt.grid(True)
         # plt.savefig("test.png")
-        plt.show()
+        plt.show(block=False)
 
 
-def threaded_function():
-    import matplotlib.pyplot as test
+def initialize_directories(config):
+    directories = [
+        os.path.join(config['app']['app_directory']),
+        os.path.join(config['app']['app_directory'], 'cache'),
+        os.path.join(config['app']['app_directory'], 'plugins'),
+    ]
+    # init app directory
 
-    test.figure()
-    t = np.arange(0.0, 2.0, 0.01)
-    s = 1 + np.sin(2 * np.pi * t)
-    test.plot(t, s)
-
-    test.xlabel('time (s)')
-    test.ylabel('value (V)')
-    test.title('A financial chart')
-    test.grid(True)
-    # plt.savefig("test.png")
-    # draw()
-
-    test.show(block=False)
-
-
-def threaded_function_test():
-    # Plot circle or radius 3
-    import matplotlib.pyplot as test2
-    test2.figure()
-    an = np.linspace(0, 2 * np.pi, 100)
-
-    test2.subplot(221)
-    test2.plot(3 * np.cos(an), 3 * np.sin(an))
-    test2.title('not equal, looks like ellipse', fontsize=10)
-
-    test2.subplot(222)
-    test2.plot(3 * np.cos(an), 3 * np.sin(an))
-    test2.axis('equal')
-    test2.title('equal, looks like circle', fontsize=10)
-
-    test2.subplot(223)
-    test2.plot(3 * np.cos(an), 3 * np.sin(an))
-    test2.axis('equal')
-    test2.axis([-3, 3, -3, 3])
-    test2.title('looks like circle, even after changing limits', fontsize=10)
-
-    test2.subplot(224)
-    test2.plot(3 * np.cos(an), 3 * np.sin(an))
-    test2.axis('equal')
-    test2.axis([-3, 3, -3, 3])
-    test2.plot([0, 4], [0, 4])
-    test2.title('still equal after adding line', fontsize=10)
-
-    test2.show(block=False)
+    for directory in directories:
+        if not os.path.exists(directory):
+            try:
+                os.makedirs(directory)
+            except OSError as e:
+                if e.errno != errno.EEXIST:
+                    raise
 
 
 def main():
@@ -92,36 +63,40 @@ def main():
         os.path.dirname(__file__)), 'conf', 'lehman.ini'))
 
     plugin_base = PluginBase(package='plugins',
-                             searchpath=[get_path('./plugins')])
+                             searchpath=[get_path('./plugins'),
+                                         get_path('./cache'),
+                                         get_path('./datasource')])
+
+    initialize_directories(config)
+
+    additional_plugins_path = get_path(os.path.join(
+                                       config['app']['app_directory'],
+                                       'plugins'))
 
     # register additional plugins command line parameter
     source = plugin_base.make_plugin_source(
-        searchpath=[get_path('./tmp/skata')],
-        identifier='skata')
+        searchpath=[additional_plugins_path],
+        identifier='plugins')
 
     available_plugins = [plugin for plugin in source.list_plugins()
                          if plugin != 'abstractplugin']
 
+    print(available_plugins)
+
     # history = InMemoryHistory()
-    history = FileHistory('/tmp/history.txt')
+    history = FileHistory(os.path.join(config['app']['app_directory'],
+                                       'history.txt'))
 
-    print(config.sections())
-
-    # init app directory
-    if not os.path.exists(config['app']['app_directory']):
-        try:
-            os.makedirs('{}/cache'.format(config['app']['app_directory']))
-        except OSError as e:
-            if e.errno != errno.EEXIST:
-                raise
 
     # init cache source command line parameter
-    cache_service_class = find_widget('cache', 'filestore')
-    cache_service = cache_service_class(config)
+    cache_obj = source.load_plugin([item for item in available_plugins
+                                    if item == 'filestore'][0])
+    cache_service = cache_obj.DataStore(config)
 
     # init data source, command line parameter
-    data_service_class = find_widget('datasource', 'quandl')
-    data_service = data_service_class(config, cache_service)
+    data_obj = source.load_plugin([item for item in available_plugins
+                                   if item == 'quandl'][0])
+    data_service = data_obj.Retriever(config, cache_service)
 
     try:
         while True:
@@ -131,12 +106,7 @@ def main():
                 raise KeyboardInterrupt
 
             tokens = input_string.split(" ")
-            # filename = input_string.replace(" ", "_")
             plugin_name = tokens.pop(0)
-
-            # data_service.set_arguments(tokens)
-            # here I need to do a bunch of validations on input string.
-            # maybe each class needs to declare its own validation
 
             if plugin_name in available_plugins:
                 object = source.load_plugin(plugin_name)
@@ -148,7 +118,7 @@ def main():
                     continue
 
                 try:
-                    print(obj.run())
+                    result = obj.run()
                 except Exception as e:
                     print('There was an issue running '
                           'the {} object: {}: {}'.format(plugin_name,

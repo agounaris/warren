@@ -44,7 +44,7 @@ class Statement(object):
                 continue
 
             if value_two:
-                percentage = (value_one - value_two) / value_two
+                percentage = (value_two - value_one) / value_two
                 differences[attr] = percentage
             else:
                 differences[attr] = 0
@@ -107,7 +107,7 @@ class FinancialPerformance(object):
             raise ValueError('Not a valid year')
 
         return [income for income in self._income_statements
-                if income.year == year][0]
+                if income.year == int(year)][0]
 
     def get_balance_sheet_by_year(self, year=None):
         """
@@ -118,7 +118,6 @@ class FinancialPerformance(object):
         if not year:
             raise ValueError('Not a valid year')
 
-        print(year)
         return [bs for bs in self._balance_sheets
                 if bs.year == int(year)][0]
 

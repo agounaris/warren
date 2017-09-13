@@ -54,7 +54,17 @@ class Plugin(AbstractPlugin):
 
         fp = self._data_service.get_statements(self._args)
 
-        print(fp.get_balance_sheet_by_year(self._args['year_from']) == fp.get_balance_sheet_by_year(self._args['year_to']))
+        if self._args['statement'] == 'balance_sheet':
+            print(fp.get_balance_sheet_by_year(self._args['year_from'])
+                  == fp.get_balance_sheet_by_year(self._args['year_to']))
+
+        if self._args['statement'] == 'income_statement':
+            print(fp.get_income_statement_by_year(self._args['year_from'])
+                  == fp.get_income_statement_by_year(self._args['year_to']))
+
+        if self._args['statement'] == 'cash_flow':
+            print(fp.get_cash_flow_by_year(self._args['year_from'])
+                  == fp.get_cash_flow_by_year(self._args['year_to']))
 
         return self._args
 
@@ -63,6 +73,8 @@ class Plugin(AbstractPlugin):
         return self._name
 
     def _validate_arguments(self, args):
+        schema = ArgumentsSchema()
+
         try:
             arguments = {
                 'ticker': args.pop(0),
@@ -71,7 +83,7 @@ class Plugin(AbstractPlugin):
                 'year_to': args.pop(0),
             }
 
-            result = ArgumentsSchema().load(arguments)
+            result = schema.load(arguments)
             if result.errors:
                 print('there are validation errors')
                 print(result.errors)

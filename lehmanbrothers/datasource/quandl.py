@@ -110,9 +110,9 @@ class Retriever(object):
                                                                      c=code,
                                                                      m=mode)
             quandl.ApiConfig.api_key = self._config['quandl']['api_key']
-            data = quandl.get(list(needed_quandl_codes.values())).to_csv()
+            data = quandl.get(list(needed_quandl_codes.values()))
 
-            self._cache_service.save_statements(tokens, statements)
+            self._cache_service.save_statements(tokens, data.to_csv())
 
 
 

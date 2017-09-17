@@ -1,42 +1,11 @@
-import numpy as np
-import threading
 import os
 import errno
-import sys
 from pluginbase import PluginBase
 from prompt_toolkit import prompt
-from prompt_toolkit.history import InMemoryHistory
 from prompt_toolkit.history import FileHistory
 from functools import partial
 from pathlib import Path
 import configparser
-import matplotlib.pyplot as plt
-
-
-def plot():
-    plt.plot([1,2,3])
-    plt.draw()
-    plt.show(block=False)
-
-class App(threading.Thread):
-    def __init__(self):
-        threading.Thread.__init__(self)
-        self.start()
-
-    def callback(self):
-        self.root.quit()
-
-    def run(self):
-        t = np.arange(0.0, 2.0, 0.01)
-        s = 1 + np.sin(2 * np.pi * t)
-        plt.plot(t, s)
-
-        plt.xlabel('time (s)')
-        plt.ylabel('value (V)')
-        plt.title('A financial chart')
-        plt.grid(True)
-        # plt.savefig("test.png")
-        plt.show(block=False)
 
 
 def initialize_directories(app_directory):

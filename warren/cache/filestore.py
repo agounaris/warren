@@ -1,11 +1,14 @@
 import pandas as pd
 import os
+from pathlib import Path
 
 
 class DataStore(object):
 
     def __init__(self, config):
         self._config = config
+        home = str(Path.home())
+        self._app_directory = '{}/{}'.format(home, config['app']['app_directory'])
 
     def save_data(self, tokens, mixed_dataframe):
         tickers = [tokens['dependent_variable']]
@@ -21,7 +24,7 @@ class DataStore(object):
             )
 
             cached_file_path = os.path.join(
-                self._config['app']['app_directory'], 'cache', filename)
+                self._app_directory, 'cache', filename)
             with open(cached_file_path, 'w') as file:
                 file.write(df.to_csv())
 
@@ -40,15 +43,13 @@ class DataStore(object):
 
             try:
                 cached_file_path = os.path.join(
-                    self._config['app']['app_directory'], 'cache', filename)
-                # print(cached_file_path)
+                    self._app_directory, 'cache', filename)
                 data = pd.read_csv(
                     cached_file_path, parse_dates=True, index_col=2)
                 frames.append(data)
             except Exception:
                 return None
 
-        # print(frames)
         result = pd.concat(frames)
 
         return result
@@ -56,7 +57,7 @@ class DataStore(object):
     def save_statements(self, tokens, data):
         filename = 'statements_{}.csv'.format(tokens['ticker'].upper())
         cached_file_path = os.path.join(
-                self._config['app']['app_directory'], 'cache', filename)
+            self._app_directory, 'cache', filename)
         with open(cached_file_path, 'w') as file:
             file.write(data)
 
@@ -64,8 +65,7 @@ class DataStore(object):
         filename = 'statements_{}.csv'.format(tokens['ticker'].upper())
         try:
             cached_file_path = os.path.join(
-                self._config['app']['app_directory'], 'cache', filename)
-            # print(cached_file_path)
+                self._app_directory, 'cache', filename)
             data = pd.read_csv(cached_file_path, parse_dates=True, index_col=0)
         except Exception:
             return None

@@ -2,11 +2,13 @@ import numpy as np
 import threading
 import os
 import errno
+import sys
 from pluginbase import PluginBase
 from prompt_toolkit import prompt
 from prompt_toolkit.history import InMemoryHistory
 from prompt_toolkit.history import FileHistory
 from functools import partial
+from pathlib import Path
 import configparser
 import matplotlib.pyplot as plt
 
@@ -37,11 +39,11 @@ class App(threading.Thread):
         plt.show(block=False)
 
 
-def initialize_directories(config):
+def initialize_directories(app_directory):
     directories = [
-        os.path.join(config['app']['app_directory']),
-        os.path.join(config['app']['app_directory'], 'cache'),
-        os.path.join(config['app']['app_directory'], 'plugins'),
+        os.path.join(app_directory),
+        os.path.join(app_directory, 'cache'),
+        os.path.join(app_directory, 'plugins'),
     ]
     # init app directory
 
@@ -67,10 +69,13 @@ def main():
                                          get_path('./cache'),
                                          get_path('./datasource')])
 
-    initialize_directories(config)
+    home = str(Path.home())
+    app_directory = '{}/{}'.format(home, config['app']['app_directory'])
+
+    initialize_directories(app_directory)
 
     additional_plugins_path = get_path(os.path.join(
-                                       config['app']['app_directory'],
+                                       app_directory,
                                        'plugins'))
 
     # register additional plugins command line parameter
@@ -81,10 +86,8 @@ def main():
     available_plugins = [plugin for plugin in source.list_plugins()
                          if plugin != 'abstractplugin']
 
-    print(available_plugins)
-
     # history = InMemoryHistory()
-    history = FileHistory(os.path.join(config['app']['app_directory'],
+    history = FileHistory(os.path.join(app_directory,
                                        'history.txt'))
 
 

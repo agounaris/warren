@@ -9,10 +9,10 @@ with open('README.rst') as readme_file:
 with open('HISTORY.rst') as history_file:
     history = history_file.read()
 
-requirements = [
-    'Click>=6.0',
-    # TODO: put package requirements here
-]
+requirements_file = [line.strip() for line in open('requirements.txt').readlines()
+                     if line.strip() and not line.startswith('#')]
+
+requirements = requirements_file
 
 test_requirements = [
     # TODO: put package test requirements here

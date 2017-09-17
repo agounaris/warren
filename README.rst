@@ -6,6 +6,15 @@ Warren, an python module for extensible econometrics
 
 * Free software: MIT license
 
+Features
+--------
+
+* Data retrieval using Quandl https://www.quandl.com
+* Financial statements comparison
+* ARIMA time series modelling
+* Linear regression modelling
+* VAR modelling
+
 Installation
 --------
 
@@ -29,21 +38,17 @@ command line
 
 Sample commands using the REPL
 
-compare MSFT balance_sheet 2015 2016
+.. code-block:: python
+    compare MSFT balance_sheet 2015 2016
 
-arima 2015-11-11 2016-11-11 MSFT 1
+.. code-block:: python
+    arima 2015-11-11 2016-11-11 MSFT 1
 
-ols 2015-11-11 2016-11-11 MSFT AAPL NDAQ
+.. code-block:: python
+    ols 2015-11-11 2016-11-11 MSFT AAPL NDAQ
 
-var 2015-11-11 2016-11-11 MSFT AAPL NDAQ
-
-Features
---------
-
-* Financial statements comparison
-* ARIMA time series modelling
-* Linear regression modelling
-* VAR modelling
+.. code-block:: python
+    var 2015-11-11 2016-11-11 MSFT AAPL NDAQ
 
 Under development
 --------

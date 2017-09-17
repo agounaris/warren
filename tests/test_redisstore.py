@@ -1,4 +1,4 @@
-from lehmanbrothers.cache.redisstore import DataStore
+from warren.cache.redisstore import DataStore
 
 
 class TestRedisstore(object):

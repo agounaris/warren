@@ -19,28 +19,28 @@ test_requirements = [
 ]
 
 setup(
-    name='lehmanbrothers',
+    name='warren',
     version='0.1.0',
     description="Python Boilerplate contains all the boilerplate you need to create a Python package.",
     long_description=readme + '\n\n' + history,
     author="Argyrios Gounaris",
     author_email='agounaris@gmail.com',
-    url='https://github.com/agounaris/lehmanbrothers',
+    url='https://github.com/agounaris/warren',
     packages=[
-        'lehmanbrothers',
+        'warren',
     ],
-    package_dir={'lehmanbrothers':
-                 'lehmanbrothers'},
+    package_dir={'warren':
+                 'warren'},
     entry_points={
         'console_scripts': [
-            'lehmanbrothers=lehmanbrothers.cli:main'
+            'warren=warren.repl:main'
         ]
     },
     include_package_data=True,
     install_requires=requirements,
     license="MIT license",
     zip_safe=False,
-    keywords='lehmanbrothers',
+    keywords='warren',
     classifiers=[
         'Development Status :: 2 - Pre-Alpha',
         'Intended Audience :: Developers',

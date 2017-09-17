@@ -1,6 +1,6 @@
 import pytest
 
-from lehmanbrothers.plugins.ols import Plugin
+from warren.plugins.ols import Plugin
 
 
 class TestOls(object):

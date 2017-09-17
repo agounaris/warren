@@ -1,5 +1,5 @@
 import pytest
-from lehmanbrothers.plugins.arima import Plugin
+from warren.plugins.arima import Plugin
 
 
 class TestArima(object):

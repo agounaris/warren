@@ -1,4 +1,4 @@
-from lehmanbrothers.plugins.series import Plugin
+from warren.plugins.series import Plugin
 
 
 class TestSeries(object):

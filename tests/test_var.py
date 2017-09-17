@@ -1,4 +1,4 @@
-from lehmanbrothers.plugins.var import Plugin
+from warren.plugins.var import Plugin
 
 
 class TestVar(object):

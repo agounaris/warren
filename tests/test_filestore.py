@@ -1,4 +1,4 @@
-from lehmanbrothers.cache.filestore import DataStore
+from warren.cache.filestore import DataStore
 
 
 class TestFilestore(object):

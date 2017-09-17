@@ -1,4 +1,4 @@
-from lehmanbrothers.plugins.statements import Plugin
+from warren.plugins.statements import Plugin
 
 
 class TestStatements(object):

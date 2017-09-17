@@ -5,6 +5,7 @@ warren
 Warren, an python module for extensible econometrics
 
 * Free software: MIT license
+* For python 3.6
 
 Features
 --------

@@ -1,9 +1,9 @@
 import quandl
 import pandas as pd
-from api.statements import BalanceSheet
-from api.statements import IncomeStatement
-from api.statements import CashFlow
-from api.statements import FinancialPerformance
+from warren.api.statements import BalanceSheet
+from warren.api.statements import IncomeStatement
+from warren.api.statements import CashFlow
+from warren.api.statements import FinancialPerformance
 
 codes = [
     'INTANGIBLES',

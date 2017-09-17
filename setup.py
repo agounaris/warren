@@ -11,12 +11,11 @@ with open('HISTORY.rst') as history_file:
 
 requirements_file = [line.strip() for line in open('requirements.txt').readlines()
                      if line.strip() and not line.startswith('#')]
-
 requirements = requirements_file
 
-test_requirements = [
-    # TODO: put package test requirements here
-]
+requirements_file = [line.strip() for line in open('requirements_dev.txt').readlines()
+                     if line.strip() and not line.startswith('#')]
+test_requirements = requirements_file
 
 setup(
     name='warren',

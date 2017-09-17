@@ -1,31 +1,51 @@
 ===============================
-lemmanbrothers
+warren
 ===============================
 
-
-.. image:: https://img.shields.io/pypi/v/lehmanbrothers.svg
-        :target: https://pypi.python.org/pypi/lemmanbrothers
-
-.. image:: https://img.shields.io/travis/agounaris/lehmanbrothers.svg
-        :target: https://travis-ci.org/agounaris/lemmanbrothers
-
-.. image:: https://readthedocs.org/projects/lehmanbrothers/badge/?version=latest
-        :target: https://lemmanbrothers.readthedocs.io/en/latest/?badge=latest
-        :alt: Documentation Status
-
-.. image:: https://pyup.io/repos/github/agounaris/lehmanbrothers/shield.svg
-     :target: https://pyup.io/repos/github/agounaris/lemmanbrothers/
-     :alt: Updates
-
-
-Python Boilerplate contains all the boilerplate you need to create a Python package.
-
+Warren, an python module for extensible econometrics
 
 * Free software: MIT license
-* Documentation: https://lemmanbrothers.readthedocs.io.
 
+Installation
+--------
+
+Directly from github using pip
+
+.. highlight:: bash
+pip install git+git://github.com/agounaris/warren
+
+Building it locally
+
+* Checkout the repository github.com/agounaris/warren
+* Navigate under warren directory
+* Build the package using the command python setup.py sdist
+* Install the .tar.gz file using pip (pip install dist/warren-0.1.0.tar.gz)
+
+Usage
+--------
+
+After installation execute the app by typing 'warren' on the
+command line
+
+Sample commands using the REPL
+
+compare MSFT balance_sheet 2015 2016
+
+arima 2015-11-11 2016-11-11 MSFT 1
+
+ols 2015-11-11 2016-11-11 MSFT AAPL NDAQ
+
+var 2015-11-11 2016-11-11 MSFT AAPL NDAQ
 
 Features
+--------
+
+* Financial statements comparison
+* ARIMA time series modelling
+* Linear regression modelling
+* VAR modelling
+
+Under development
 --------
 
 * TODO
@@ -33,8 +53,5 @@ Features
 Credits
 ---------
 
-This package was created with Cookiecutter_ and the `audreyr/cookiecutter-pypackage`_ project template.
-
-.. _Cookiecutter: https://github.com/audreyr/cookiecutter
-.. _`audreyr/cookiecutter-pypackage`: https://github.com/audreyr/cookiecutter-pypackage
+This package was created as a final project for the MSc Computing for Financial Services programme
 

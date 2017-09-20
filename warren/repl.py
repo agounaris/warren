@@ -1,5 +1,7 @@
 import os
 import errno
+import click
+import sys
 from pluginbase import PluginBase
 from prompt_toolkit import prompt
 from prompt_toolkit.history import FileHistory
@@ -25,13 +27,23 @@ def initialize_directories(app_directory):
                     raise
 
 
-def main():
+@click.command()
+@click.option('--redis-url', default='', help='redis-url')
+def main(redis_url):
+
     here = os.path.abspath(os.path.dirname(__file__))
     get_path = partial(os.path.join, here)
 
     config = configparser.ConfigParser()
     config.read(os.path.join(os.path.abspath(
         os.path.dirname(__file__)), 'conf', 'lehman.ini'))
+
+    storage = 'filestore'
+    if redis_url:
+        storage = 'redisstore'
+        print(redis_url.split(':'))
+        config.set('app', 'redis_url', redis_url.split(':')[0])
+        config.set('app', 'redis_port', redis_url.split(':')[1])
 
     plugin_base = PluginBase(package='plugins',
                              searchpath=[get_path('./plugins'),
@@ -62,7 +74,7 @@ def main():
 
     # init cache source command line parameter
     cache_obj = source.load_plugin([item for item in available_plugins
-                                    if item == 'filestore'][0])
+                                    if item == storage][0])
     cache_service = cache_obj.DataStore(config)
 
     # init data source, command line parameter
@@ -89,13 +101,13 @@ def main():
                            the {} object: {}'.format(plugin_name, e))
                     continue
 
-                try:
-                    result = obj.run()
-                except Exception as e:
-                    print('There was an issue running '
-                          'the {} object: {}: {}'.format(plugin_name,
-                                                         repr(e),
-                                                         str(e)))
+                # try:
+                result = obj.run()
+                # except Exception as e:
+                    # print('There was an issue running '
+                          # 'the {} object: {}: {}'.format(plugin_name,
+                                                         # repr(e),
+                                                         # str(e)))
 
     except KeyboardInterrupt:
         # just exit

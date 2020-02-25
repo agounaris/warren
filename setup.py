@@ -26,7 +26,7 @@ setup(
     author_email='agounaris@gmail.com',
     url='https://github.com/agounaris/warren',
     packages=[
-        'warrenit',
+        'warren',
     ],
     package_dir={'warren':
                  'warren'},

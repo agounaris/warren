@@ -1,7 +1,7 @@
 Quandl==3.0.1
 beautifulsoup4==4.5.1
 click==6.6
-requests==2.12.1
+requests==2.20.0
 prompt_toolkit==1.0.14
 pluginbase==0.5
 voluptuous==0.10.5

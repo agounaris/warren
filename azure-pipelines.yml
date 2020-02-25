@@ -6,7 +6,8 @@
 trigger:
 - master
 
-pool: 'personal'
+pool:
+    vmImage: ubuntu-latest
 
 
 steps:

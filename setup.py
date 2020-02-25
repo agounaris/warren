@@ -18,7 +18,7 @@ requirements_file = [line.strip() for line in open('requirements_dev.txt').readl
 test_requirements = requirements_file
 
 setup(
-    name='warren',
+    name='warrenit',
     version='0.1.0',
     description="Python Boilerplate contains all the boilerplate you need to create a Python package.",
     long_description=readme + '\n\n' + history,
@@ -26,20 +26,20 @@ setup(
     author_email='agounaris@gmail.com',
     url='https://github.com/agounaris/warren',
     packages=[
-        'warren',
+        'warrenit',
     ],
     package_dir={'warren':
                  'warren'},
     entry_points={
         'console_scripts': [
-            'warren=warren.repl:main'
+            'warrenit=warren.repl:main'
         ]
     },
     include_package_data=True,
     install_requires=requirements,
     license="MIT license",
     zip_safe=False,
-    keywords='warren',
+    keywords='warrenit',
     classifiers=[
         'Development Status :: 2 - Pre-Alpha',
         'Intended Audience :: Developers',

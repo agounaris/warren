@@ -11,6 +11,10 @@ pool:
 
 
 steps:
+- task: TwineAuthenticate@1
+  inputs:
+    artifactFeed: 'testproject/aproduct'
+
 - script: |
     pip install wheel
     pip install twine
@@ -18,9 +22,6 @@ steps:
 - script: |
     python setup.py bdist_wheel
 
-- task: TwineAuthenticate@1
-  inputs:
-    artifactFeed: 'testproject/aproduct'
-
 - script: |
+    cat $(PYPIRC_PATH)
     python -m twine upload -r 'testproject/aproduct' --config-file $(PYPIRC_PATH) dist/*.whl

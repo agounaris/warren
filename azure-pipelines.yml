@@ -24,4 +24,4 @@ steps:
 
 - script: |
     cat $(PYPIRC_PATH)
-    python -m twine upload -r 'testproject/aproduct' --config-file $(PYPIRC_PATH) dist/*.whl
+    python -m twine upload -r 'aproduct' --config-file $(PYPIRC_PATH) dist/*.whl
